@@ -1,8 +1,9 @@
+import logging
 import os
 import sys
 import time
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Optional
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
@@ -73,7 +74,7 @@ class Ticket(TicketCreate):
     status: str
     created_at: str
     updated_at: str
-    replies: List[dict]
+    replies: list[dict]
 
 
 def _now() -> str:
@@ -120,8 +121,8 @@ def create_ticket(payload: TicketCreate) -> Ticket:
     return ticket
 
 
-@app.get("/tickets", response_model=List[Ticket])
-def list_tickets(status: Optional[str] = Query(None)) -> List[Ticket]:
+@app.get("/tickets", response_model=list[Ticket])
+def list_tickets(status: Optional[str] = Query(None)) -> list[Ticket]:
     if status is not None:
         if status not in STATUSES:
             raise HTTPException(
@@ -145,9 +146,7 @@ def reply_to_ticket(ticket_id: int, payload: ReplyCreate) -> Ticket:
             detail=f"Invalid status '{payload.status}'. Use one of {STATUSES}",
         )
     ticket = _get_ticket_or_404(ticket_id)
-    ticket.replies.append(
-        {"message": payload.message, "replied_at": _now()}
-    )
+    ticket.replies.append({"message": payload.message, "replied_at": _now()})
     ticket.status = payload.status
     ticket.updated_at = _now()
     logger.info("Ticket #%s moved to %s", ticket.id, ticket.status)
